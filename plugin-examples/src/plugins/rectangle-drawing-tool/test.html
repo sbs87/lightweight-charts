@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>SBS Points Loader</title>
+</head>
+<body>
+	<button id="loadBtn">Load SBS Points</button>
+	<pre id="output"></pre>
+	<script>
+		document.getElementById('loadBtn').addEventListener('click', async () => {
+			try {
+				const response = await fetch('sbs_test.json');
+				const data = await response.json();
+				document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+				console.log('Loaded sbs_points.json data:', data);
+			} catch (e) {
+				document.getElementById('output').textContent = 'Error loading sbs_points.json';
+				console.error('Error loading sbs_points.json:', e);
+			}
+		});
+	</script>
+</body>
+</html>
+<!-- //private async _loadSbsPoints() {
+		//try {
+			const response = await fetch('sbs_test.json');
+			const data = await response.json();
+			console.log('Loaded sbs_points.json data:', data);
+			// Ensure data is in the correct format
+			// this.sbs_points = (data as Point[]).map(p => ({
+			// 	time: p.time as Time,
+			// 	price: p.price,
+			// }));
+			console.log('Parsed sbs_points:', this.sbs_points);
+		// } catch (e) {
+		// 	this.sbs_points = this.sbs_pointsFallback; 
+		// 	console.error('Error loading sbs_points.json:', e);
+		// }
+//	} -->

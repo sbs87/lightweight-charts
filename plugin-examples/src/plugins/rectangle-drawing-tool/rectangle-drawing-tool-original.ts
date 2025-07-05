@@ -1,35 +1,17 @@
 import { CanvasRenderingTarget2D } from 'fancy-canvas';
 import {
-    Coordinate,
-    IChartApi,
-    isBusinessDay,
-    ISeriesApi,
-    ISeriesPrimitiveAxisView,
-    IPrimitivePaneRenderer,
-    IPrimitivePaneView,
-    MouseEventParams,
-    PrimitivePaneViewZOrder,
-    SeriesType,
-    Time,
+	Coordinate,
+	IChartApi,
+	isBusinessDay,
+	ISeriesApi,
+	ISeriesPrimitiveAxisView,
+	IPrimitivePaneRenderer,
+	IPrimitivePaneView,
+	MouseEventParams,
+	PrimitivePaneViewZOrder,
+	SeriesType,
+	Time,
 } from 'lightweight-charts';
-
-// // Static rectangle data
-// const STATIC_RECTANGLES: Array<{
-//     p1: { time: Time; price: number };
-//     p2: { time: Time; price: number };
-//     options?: Partial<RectangleDrawingToolOptions>;
-// }> = [
-//     {
-//         p1: { time: 1704067200, price: 100 }, // Example UNIX timestamp and price
-//         p2: { time: 1704153600, price: 110 },
-//         options: { fillColor: 'rgba(0, 128, 255, 0.5)' },
-//     },
-//     {
-//         p1: { time: 1704240000, price: 120 },
-//         p2: { time: 1704326400, price: 130 },
-//         options: { fillColor: 'rgba(255, 128, 0, 0.5)' },
-//     },
-// ];
 import { ensureDefined } from '../../helpers/assertions';
 import { PluginBase } from '../plugin-base';
 import { positionsBox } from '../../helpers/dimensions/positions';
@@ -395,10 +377,7 @@ export class RectangleDrawingTool {
 		this._rectangles = [];
 		this._chart.subscribeClick(this._clickHandler);
 		this._chart.subscribeCrosshairMove(this._moveHandler);
-		this._loadSbsPoints();
-
 	}
-
 
 	private _clickHandler = (param: MouseEventParams) => this._onClick(param);
 	private _moveHandler = (param: MouseEventParams) => this._onMouseMove(param);
@@ -425,7 +404,6 @@ export class RectangleDrawingTool {
 		if (this._toolbarButton) {
 			this._toolbarButton.style.fill = 'rgb(100, 150, 250)';
 		}
-		this._addPointSbs();
 	}
 
 	stopDrawing(): void {
@@ -440,35 +418,21 @@ export class RectangleDrawingTool {
 		return this._drawing;
 	}
 
-
-
-
-
 	private _onClick(param: MouseEventParams) {
 		if (!this._drawing || !param.point || !param.time || !this._series) return;
 		const price = this._series.coordinateToPrice(param.point.y);
-		//const price = 400;
-        console.log('RectangleDrawingTool: Clicked at time:', param.time, 'price:', price,' point:', param.point);
-		// RectangleDrawingTool: Clicked at time: 1552305600 price: 803.3989864643265  point: {x: 138.91796875, y: 61.09375}
-		// RectangleDrawingTool: Clicked at time: 1555156800 price: 184.2700541822571  point: {x: 335.97265625, y: 208.30859375}
-
 		if (price === null) {
 			return;
 		}
-		//this._addPointSbs();
-		// this._addPoint({
-		// 	time: param.time,
-		// 	price,
-		// });
+		this._addPoint({
+			time: param.time,
+			price,
+		});
 	}
-
-	
 
 	private _onMouseMove(param: MouseEventParams) {
 		if (!this._drawing || !param.point || !param.time || !this._series) return;
 		const price = this._series.coordinateToPrice(param.point.y);
-		console.log('_onMouseMove:', 'price:', price,' point:', param.point.y);
-
 		if (price === null) {
 			return;
 		}
@@ -480,63 +444,10 @@ export class RectangleDrawingTool {
 		}
 	}
 
-	private sbs_pointsFallback: Point[] = [
-		{ time: 1551441600 as Time, price: 800 }, // Example UNIX timestamp and price
-		{ time: 1553688000 as Time, price: 400 }
-	];
-
-
-	private sbs_points: Point[] = [];
-
-	private async _loadSbsPoints() {
-		try {
-			const response = await fetch('../sbs_test.json');
-			const data = await response.json();
-			console.log('Loaded sbs_points.json data STEVE:', data);
-			// Ensure data is in the correct format
-			this.sbs_points = (data as Point[]).map(p => ({
-				time: p.time as Time,
-				price: p.price,
-			}));
-			console.log('Parsed sbs_points:', this.sbs_points);
-		} catch (e) {
-			this.sbs_points = this.sbs_pointsFallback; 
-			console.error('Error loading sbs_points.json:', e);
-		}
-	}
-
-	// private async _loadSbsPoints() {
-
-	// 		try {
-	// 			const response = await fetch('sbs_test.json');
-	// 			const data = await response.json();
-	// 			document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-	// 			console.log('Loaded sbs_points.json data:', data);
-	// 		} catch (e) {
-	// 			document.getElementById('output').textContent = 'Error loading sbs_points.json';
-	// 			console.error('Error loading sbs_points.json:', e);
-	// 		}
-	// 	}
-	//private sbs_points = [{price:400,time:945.87},{price:500,time:980.87}];
-
-	// TODO: how to add multiple rectangles from sbs_points?
-	// This is a temporary solution to add the first two points from sbs_points
-
-	private _addPointSbs(){
-		this._addNewRectangle(this.sbs_points[0], this.sbs_points[1]);
-
-	}
-	
-
 	private _addPoint(p: Point) {
 		this._points.push(p);
-
 		if (this._points.length >= 2) {
-			//this._addNewRectangle(this.sbs_points[0], this.sbs_points[1]);
 			this._addNewRectangle(this._points[0], this._points[1]);
-			// console.log('RectangleDrawingTool: Added rectangle with points:',this._points, this._points[0], this._points[1]);
-
-			console.log('RectangleDrawingTool: Added rectangle with points:',this._points);
 			this.stopDrawing();
 			this._removePreviewRectangle();
 		}
@@ -550,8 +461,6 @@ export class RectangleDrawingTool {
 		this._rectangles.push(rectangle);
 		ensureDefined(this._series).attachPrimitive(rectangle);
 	}
-
-
 
 	private _removeRectangle(rectangle: Rectangle) {
 		ensureDefined(this._series).detachPrimitive(rectangle);

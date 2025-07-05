@@ -4,6 +4,10 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Lightweight Charts - Rectangle Drawing Tool Plugin Example</title>
+		     <script
+     type="text/javascript"
+     src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"
+    ></script>
 		<link href="../../../examples-base.css" rel="stylesheet" />
 		<style>
 			#toolbar {
@@ -36,5 +40,20 @@
 			</p>
 		</div>
 		<script type="module" src="./example.ts"></script>
+	<button id="loadBtn">Load SBS Points</button>
+	<!-- <pre id="output"></pre>
+		<script>
+		document.getElementById('loadBtn').addEventListener('click', async () => {
+			try {
+				const response = await fetch('../sbs_test.json');
+				const data = await response.json();
+				document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+				console.log('Loaded sbs_points.json data:', data);
+			} catch (e) {
+				document.getElementById('output').textContent = 'Error loading sbs_points.json';
+				console.error('Error loading sbs_points.json:', e);
+			}
+		});
+	</script> -->
 	</body>
 </html>
