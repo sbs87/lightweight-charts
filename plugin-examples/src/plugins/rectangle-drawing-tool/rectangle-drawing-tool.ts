@@ -13,23 +13,6 @@ import {
     Time,
 } from 'lightweight-charts';
 
-// // Static rectangle data
-// const STATIC_RECTANGLES: Array<{
-//     p1: { time: Time; price: number };
-//     p2: { time: Time; price: number };
-//     options?: Partial<RectangleDrawingToolOptions>;
-// }> = [
-//     {
-//         p1: { time: 1704067200, price: 100 }, // Example UNIX timestamp and price
-//         p2: { time: 1704153600, price: 110 },
-//         options: { fillColor: 'rgba(0, 128, 255, 0.5)' },
-//     },
-//     {
-//         p1: { time: 1704240000, price: 120 },
-//         p2: { time: 1704326400, price: 130 },
-//         options: { fillColor: 'rgba(255, 128, 0, 0.5)' },
-//     },
-// ];
 import { ensureDefined } from '../../helpers/assertions';
 import { PluginBase } from '../plugin-base';
 import { positionsBox } from '../../helpers/dimensions/positions';
@@ -494,16 +477,42 @@ export class RectangleDrawingTool {
 			const data = await response.json();
 			console.log('Loaded sbs_points.json data STEVE:', data);
 			// Ensure data is in the correct format
-			this.sbs_points = (data as Point[]).map(p => ({
-				time: p.time as Time,
-				price: p.price,
-			}));
+			// Expecting data as an array of { order, buy: {time, price}, sell: {time, price} }
+			this.sbs_points = [];
+			if (Array.isArray(data)) {
+				data.forEach((entry: any) => {
+					if (entry.buy && entry.sell) {
+						this.sbs_points.push(
+							{ time: entry.buy.time as Time, price: entry.buy.price },
+							{ time: entry.sell.time as Time, price: entry.sell.price }
+						);
+					}
+				});
+			}
 			console.log('Parsed sbs_points:', this.sbs_points);
 		} catch (e) {
 			this.sbs_points = this.sbs_pointsFallback; 
 			console.error('Error loading sbs_points.json:', e);
 		}
 	}
+
+
+	// private async _loadSbsPoints() {
+	// 	try {
+	// 		const response = await fetch('../sbs_test.json');
+	// 		const data = await response.json();
+	// 		console.log('Loaded sbs_points.json data STEVE:', data);
+	// 		// Ensure data is in the correct format
+	// 		this.sbs_points = (data as Point[]).map(p => ({
+	// 			time: p.time as Time,
+	// 			price: p.price,
+	// 		}));
+	// 		console.log('Parsed sbs_points:', this.sbs_points);
+	// 	} catch (e) {
+	// 		this.sbs_points = this.sbs_pointsFallback; 
+	// 		console.error('Error loading sbs_points.json:', e);
+	// 	}
+	// }
 
 	// private async _loadSbsPoints() {
 
@@ -523,7 +532,10 @@ export class RectangleDrawingTool {
 	// This is a temporary solution to add the first two points from sbs_points
 
 	private _addPointSbs(){
-		this._addNewRectangle(this.sbs_points[0], this.sbs_points[1]);
+		for (let i = 0; i + 1 < this.sbs_points.length; i += 2) {
+			console.log('RectangleDrawingTool: Adding rectangle from sbs_points:', this.sbs_points[i], this.sbs_points[i + 1]);
+			this._addNewRectangle(this.sbs_points[i], this.sbs_points[i + 1]);
+		}
 
 	}
 	
